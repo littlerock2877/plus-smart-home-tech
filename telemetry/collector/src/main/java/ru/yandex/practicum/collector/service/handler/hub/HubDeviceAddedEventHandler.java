@@ -22,7 +22,7 @@ public class HubDeviceAddedEventHandler implements HubEventHandler {
     public void handle(HubEvent event) {
         DeviceAddedEvent deviceAddedEvent = (DeviceAddedEvent) event;
         DeviceAddedEventAvro payload = DeviceAddedEventAvro.newBuilder()
-                .setId(deviceAddedEvent.getHubId())
+                .setId(deviceAddedEvent.getId())
                 .setType(DeviceTypeAvro.valueOf(deviceAddedEvent.getDeviceType().name()))
                 .build();
         HubEventAvro avroEvent = HubEventAvro.newBuilder()
