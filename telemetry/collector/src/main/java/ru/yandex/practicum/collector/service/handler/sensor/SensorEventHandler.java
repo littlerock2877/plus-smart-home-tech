@@ -1,4 +1,4 @@
-package ru.yandex.practicum.collector.service.handler;
+package ru.yandex.practicum.collector.service.handler.sensor;
 
 import ru.yandex.practicum.collector.model.event.sensor.SensorEvent;
 import ru.yandex.practicum.collector.model.event.sensor.SensorEventType;

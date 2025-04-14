@@ -3,7 +3,7 @@ package ru.yandex.practicum.collector.service.event;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.collector.model.event.hub.HubEvent;
 import ru.yandex.practicum.collector.model.event.hub.HubEventType;
-import ru.yandex.practicum.collector.service.handler.HubEventHandler;
+import ru.yandex.practicum.collector.service.handler.hub.HubEventHandler;
 
 import java.util.List;
 import java.util.Map;
@@ -21,10 +21,10 @@ public class HubEventServiceImpl implements HubEventService {
 
     @Override
     public void handleEvent(HubEvent request) {
-        if (hubEventHandlers.containsKey(request.getEventType())) {
-            hubEventHandlers.get(request.getEventType()).handle(request);
+        if (hubEventHandlers.containsKey(request.getType())) {
+            hubEventHandlers.get(request.getType()).handle(request);
         } else {
-            throw new IllegalArgumentException(String.format("Handler for event with type %s not found", request.getEventType()));
+            throw new IllegalArgumentException(String.format("Handler for event with type %s not found", request.getType()));
         }
     }
 }

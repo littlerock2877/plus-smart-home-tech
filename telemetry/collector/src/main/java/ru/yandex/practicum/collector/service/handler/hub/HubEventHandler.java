@@ -1,4 +1,4 @@
-package ru.yandex.practicum.collector.service.handler;
+package ru.yandex.practicum.collector.service.handler.hub;
 
 import ru.yandex.practicum.collector.model.event.hub.HubEvent;
 import ru.yandex.practicum.collector.model.event.hub.HubEventType;

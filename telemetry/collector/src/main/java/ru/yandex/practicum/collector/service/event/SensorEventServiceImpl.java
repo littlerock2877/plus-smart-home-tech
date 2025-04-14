@@ -3,7 +3,7 @@ package ru.yandex.practicum.collector.service.event;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.collector.model.event.sensor.SensorEvent;
 import ru.yandex.practicum.collector.model.event.sensor.SensorEventType;
-import ru.yandex.practicum.collector.service.handler.SensorEventHandler;
+import ru.yandex.practicum.collector.service.handler.sensor.SensorEventHandler;
 
 import java.util.List;
 import java.util.Map;
