@@ -21,7 +21,7 @@ public class HubDeviceRemovedEventHandler implements HubEventHandler {
     public void handle(HubEvent event) {
         DeviceRemovedEvent deviceRemovedEvent = (DeviceRemovedEvent) event;
         DeviceRemovedEventAvro payload = DeviceRemovedEventAvro.newBuilder()
-                .setId(deviceRemovedEvent.getHubId())
+                .setId(deviceRemovedEvent.getId())
                 .build();
         HubEventAvro avroEvent = HubEventAvro.newBuilder()
                 .setHubId(deviceRemovedEvent.getHubId())
