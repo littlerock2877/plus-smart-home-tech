@@ -29,7 +29,12 @@ public class SwitchSensorEventHandler implements SensorEventHandler {
                 .setTimestamp(switchSensorEvent.getTimestamp())
                 .setPayload(payload)
                 .build();
-        kafkaClient.getProducer().send(new ProducerRecord<>(kafkaTopicsConfig.getSensors(), avroEvent));
+        kafkaClient.getProducer().send(new ProducerRecord<>(
+                kafkaTopicsConfig.getSensors(),
+                null,
+                event.getTimestamp().toEpochMilli(),
+                event.getHubId(),
+                avroEvent));
     }
 
     @Override

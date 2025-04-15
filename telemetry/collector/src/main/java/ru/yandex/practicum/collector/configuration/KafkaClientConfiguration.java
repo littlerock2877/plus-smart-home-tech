@@ -53,6 +53,7 @@ public class KafkaClientConfiguration {
                 }
 
                 if (producer != null) {
+                    producer.flush();
                     producer.close();
                 }
             }

@@ -54,7 +54,12 @@ public class HubScenarioAddedEventHandler implements HubEventHandler {
                 .setPayload(payload)
                 .setTimestamp(scenarioAddedEvent.getTimestamp())
                 .build();
-        kafkaClient.getProducer().send(new ProducerRecord<>(kafkaTopicsConfig.getHubs(), avroEvent));
+        kafkaClient.getProducer().send(new ProducerRecord<>(
+                kafkaTopicsConfig.getHubs(),
+                null,
+                event.getTimestamp().toEpochMilli(),
+                event.getHubId(),
+                avroEvent));
     }
 
     @Override

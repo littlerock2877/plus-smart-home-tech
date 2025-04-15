@@ -30,7 +30,12 @@ public class HubDeviceAddedEventHandler implements HubEventHandler {
                 .setPayload(payload)
                 .setTimestamp(deviceAddedEvent.getTimestamp())
                 .build();
-        kafkaClient.getProducer().send(new ProducerRecord<>(kafkaTopicsConfig.getHubs(), avroEvent));
+        kafkaClient.getProducer().send(new ProducerRecord<>(
+                kafkaTopicsConfig.getHubs(),
+                null,
+                event.getTimestamp().toEpochMilli(),
+                event.getHubId(),
+                avroEvent));
     }
 
     @Override

@@ -28,7 +28,12 @@ public class HubDeviceRemovedEventHandler implements HubEventHandler {
                 .setPayload(payload)
                 .setTimestamp(deviceRemovedEvent.getTimestamp())
                 .build();
-        kafkaClient.getProducer().send(new ProducerRecord<>(kafkaTopicsConfig.getHubs(), avroEvent));
+        kafkaClient.getProducer().send(new ProducerRecord<>(
+                kafkaTopicsConfig.getHubs(),
+                null,
+                event.getTimestamp().toEpochMilli(),
+                event.getHubId(),
+                avroEvent));
     }
 
     @Override

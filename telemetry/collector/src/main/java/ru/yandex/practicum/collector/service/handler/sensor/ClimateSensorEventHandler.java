@@ -31,7 +31,12 @@ public class ClimateSensorEventHandler implements SensorEventHandler {
                 .setTimestamp(climateSensorEvent.getTimestamp())
                 .setPayload(payload)
                 .build();
-        kafkaClient.getProducer().send(new ProducerRecord<>(kafkaTopicsConfig.getSensors(), avroEvent));
+        kafkaClient.getProducer().send(new ProducerRecord<>(
+                kafkaTopicsConfig.getSensors(),
+                null,
+                event.getTimestamp().toEpochMilli(),
+                event.getHubId(),
+                avroEvent));
     }
 
     @Override
