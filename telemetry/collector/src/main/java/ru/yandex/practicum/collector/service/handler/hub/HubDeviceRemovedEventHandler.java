@@ -1,15 +1,17 @@
 package ru.yandex.practicum.collector.service.handler.hub;
 
+import com.google.protobuf.util.Timestamps;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.collector.configuration.KafkaClient;
 import ru.yandex.practicum.collector.configuration.KafkaTopicsConfig;
-import ru.yandex.practicum.collector.model.event.hub.DeviceRemovedEvent;
-import ru.yandex.practicum.collector.model.event.hub.HubEvent;
-import ru.yandex.practicum.collector.model.event.hub.HubEventType;
+import ru.yandex.practicum.grpc.telemetry.event.DeviceRemovedEventProto;
+import ru.yandex.practicum.grpc.telemetry.event.HubEventProto;
 import ru.yandex.practicum.kafka.telemetry.event.DeviceRemovedEventAvro;
 import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
+
+import java.time.Instant;
 
 @Component
 @RequiredArgsConstructor
@@ -18,26 +20,26 @@ public class HubDeviceRemovedEventHandler implements HubEventHandler {
     private final KafkaTopicsConfig kafkaTopicsConfig;
 
     @Override
-    public void handle(HubEvent event) {
-        DeviceRemovedEvent deviceRemovedEvent = (DeviceRemovedEvent) event;
+    public void handle(HubEventProto event) {
+        DeviceRemovedEventProto deviceRemovedEvent = event.getDeviceRemoved();
         DeviceRemovedEventAvro payload = DeviceRemovedEventAvro.newBuilder()
                 .setId(deviceRemovedEvent.getId())
                 .build();
         HubEventAvro avroEvent = HubEventAvro.newBuilder()
-                .setHubId(deviceRemovedEvent.getHubId())
+                .setHubId(event.getHubId())
                 .setPayload(payload)
-                .setTimestamp(deviceRemovedEvent.getTimestamp())
+                .setTimestamp(Instant.ofEpochSecond(event.getTimestamp().getSeconds(), event.getTimestamp().getNanos()))
                 .build();
         kafkaClient.getProducer().send(new ProducerRecord<>(
                 kafkaTopicsConfig.getHubs(),
                 null,
-                event.getTimestamp().toEpochMilli(),
+                Timestamps.toMillis(event.getTimestamp()),
                 event.getHubId(),
                 avroEvent));
     }
 
     @Override
-    public HubEventType getMessageType() {
-        return HubEventType.DEVICE_REMOVED;
+    public HubEventProto.PayloadCase getMessageType() {
+        return HubEventProto.PayloadCase.DEVICE_REMOVED;
     }
 }
