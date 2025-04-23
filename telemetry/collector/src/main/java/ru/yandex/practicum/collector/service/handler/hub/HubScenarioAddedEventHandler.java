@@ -41,7 +41,7 @@ public class HubScenarioAddedEventHandler implements HubEventHandler {
                         .setSensorId(action.getSensorId())
                         .setType(ConditionTypeAvro.valueOf(action.getType().name()))
                         .setOperation(ConditionOperationAvro.valueOf(action.getOperation().name()))
-                        .setValue(action.getIntValue())
+                        .setValue(action.hasIntValue() ? action.getIntValue() : action.getBoolValue())
                         .build())
                 .toList();
 
