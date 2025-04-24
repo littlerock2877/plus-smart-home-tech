@@ -1,13 +1,13 @@
 package ru.yandex.practicum.collector.service.handler.hub;
 
+import com.google.protobuf.util.Timestamps;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.collector.configuration.KafkaClient;
 import ru.yandex.practicum.collector.configuration.KafkaTopicsConfig;
-import ru.yandex.practicum.collector.model.event.hub.HubEvent;
-import ru.yandex.practicum.collector.model.event.hub.HubEventType;
-import ru.yandex.practicum.collector.model.event.hub.ScenarioAddedEvent;
+import ru.yandex.practicum.grpc.telemetry.event.HubEventProto;
+import ru.yandex.practicum.grpc.telemetry.event.ScenarioAddedEventProto;
 import ru.yandex.practicum.kafka.telemetry.event.ActionTypeAvro;
 import ru.yandex.practicum.kafka.telemetry.event.ConditionOperationAvro;
 import ru.yandex.practicum.kafka.telemetry.event.ConditionTypeAvro;
@@ -16,6 +16,7 @@ import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
 import ru.yandex.practicum.kafka.telemetry.event.ScenarioAddedEventAvro;
 import ru.yandex.practicum.kafka.telemetry.event.ScenarioConditionAvro;
 
+import java.time.Instant;
 import java.util.List;
 
 @Component
@@ -25,9 +26,9 @@ public class HubScenarioAddedEventHandler implements HubEventHandler {
     private final KafkaTopicsConfig kafkaTopicsConfig;
 
     @Override
-    public void handle(HubEvent event) {
-        ScenarioAddedEvent scenarioAddedEvent = (ScenarioAddedEvent) event;
-        List<DeviceActionAvro> avroActions = scenarioAddedEvent.getActions().stream()
+    public void handle(HubEventProto event) {
+        ScenarioAddedEventProto scenarioAddedEvent = event.getScenarioAdded();
+        List<DeviceActionAvro> avroActions = scenarioAddedEvent.getActionsList().stream()
                 .map(action -> DeviceActionAvro.newBuilder()
                         .setType(ActionTypeAvro.valueOf(action.getType().name()))
                         .setSensorId(action.getSensorId())
@@ -35,12 +36,12 @@ public class HubScenarioAddedEventHandler implements HubEventHandler {
                         .build())
                 .toList();
 
-        List<ScenarioConditionAvro> avroConditions = scenarioAddedEvent.getConditions().stream()
+        List<ScenarioConditionAvro> avroConditions = scenarioAddedEvent.getConditionsList().stream()
                 .map(action -> ScenarioConditionAvro.newBuilder()
                         .setSensorId(action.getSensorId())
                         .setType(ConditionTypeAvro.valueOf(action.getType().name()))
                         .setOperation(ConditionOperationAvro.valueOf(action.getOperation().name()))
-                        .setValue(action.getValue())
+                        .setValue(action.hasIntValue() ? action.getIntValue() : action.getBoolValue())
                         .build())
                 .toList();
 
@@ -50,20 +51,20 @@ public class HubScenarioAddedEventHandler implements HubEventHandler {
                 .setConditions(avroConditions)
                 .build();
         HubEventAvro avroEvent = HubEventAvro.newBuilder()
-                .setHubId(scenarioAddedEvent.getHubId())
+                .setHubId(event.getHubId())
                 .setPayload(payload)
-                .setTimestamp(scenarioAddedEvent.getTimestamp())
+                .setTimestamp(Instant.ofEpochSecond(event.getTimestamp().getSeconds(), event.getTimestamp().getNanos()))
                 .build();
         kafkaClient.getProducer().send(new ProducerRecord<>(
                 kafkaTopicsConfig.getHubs(),
                 null,
-                event.getTimestamp().toEpochMilli(),
+                Timestamps.toMillis(event.getTimestamp()),
                 event.getHubId(),
                 avroEvent));
     }
 
     @Override
-    public HubEventType getMessageType() {
-        return HubEventType.SCENARIO_ADDED;
+    public HubEventProto.PayloadCase getMessageType() {
+        return HubEventProto.PayloadCase.SCENARIO_ADDED;
     }
 }
