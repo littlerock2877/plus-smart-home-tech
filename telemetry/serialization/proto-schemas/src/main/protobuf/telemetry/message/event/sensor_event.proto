@@ -38,10 +38,10 @@ message SensorEventProto {
   string hubId = 3;
   google.protobuf.Timestamp timestamp = 2;
   oneof payload {
-    ClimateSensorProto climate_sensor_event = 4;
-    LightSensorProto light_sensor_event = 5;
-    MotionSensorProto motion_sensor_event = 6;
-    SwitchSensorProto switch_sensor_event = 7;
-    TemperatureSensorProto temperature_sensor_event = 8;
+    MotionSensorProto motion_sensor_event = 4;
+    TemperatureSensorProto temperature_sensor_event = 5;
+    LightSensorProto light_sensor_event = 6;
+    ClimateSensorProto climate_sensor_event = 7;
+    SwitchSensorProto switch_sensor_event = 8;
   }
 }
