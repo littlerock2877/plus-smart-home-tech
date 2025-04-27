@@ -18,10 +18,10 @@ spring:
     url: jdbc:postgresql://localhost:5433/analyzer
     username: analyzer
     password: analyzer
-    driver-class-name: org.postgresql.Driver  # Добавлена зависимость для драйвера PostgreSQL
+    driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: update  # Изменено на update, чтобы Hibernate автоматически применял изменения в базе данных
+      ddl-auto: update
       dialect: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
     properties:

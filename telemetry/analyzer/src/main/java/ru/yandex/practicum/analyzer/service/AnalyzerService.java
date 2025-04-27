@@ -18,15 +18,10 @@ import ru.yandex.practicum.kafka.telemetry.event.TemperatureSensorAvro;
 
 import java.util.List;
 
-import static ru.yandex.practicum.kafka.telemetry.event.ConditionOperationAvro.EQUALS;
-import static ru.yandex.practicum.kafka.telemetry.event.ConditionOperationAvro.GREATER_THAN;
-import static ru.yandex.practicum.kafka.telemetry.event.ConditionOperationAvro.LOWER_THAN;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class AnalyzerService {
-
     private final ScenarioService scenarioService;
     private final HubRouterClient hubRouterClient;
 
@@ -61,7 +56,6 @@ public class AnalyzerService {
         }
 
         try {
-            // Проверка типа данных и приведение
             switch (condition.getType()) {
                 case TEMPERATURE:
                     if (sensorState.getData() instanceof TemperatureSensorAvro tempSensor) {
@@ -107,9 +101,9 @@ public class AnalyzerService {
 
     private boolean evaluateCondition(int sensorValue, ConditionOperation operation, int targetValue) {
         return switch (operation) {
-            case ConditionOperation.EQUAL -> sensorValue == targetValue;
-            case ConditionOperation.MORE -> sensorValue > targetValue;
-            case ConditionOperation.LESS -> sensorValue < targetValue;
+            case EQUALS -> sensorValue == targetValue;
+            case GREATER_THAN -> sensorValue > targetValue;
+            case LOWER_THAN -> sensorValue < targetValue;
         };
     }
 
