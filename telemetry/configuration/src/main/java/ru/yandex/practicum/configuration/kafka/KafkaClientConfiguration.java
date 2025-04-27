@@ -59,8 +59,8 @@ public class KafkaClientConfiguration {
             private void initConsumer() {
                 Properties config = new Properties();
                 config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-                config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
-                config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "ru.yandex.practicum.kafka.deserializer.GeneralAvroDeserializer");
+                config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
+                config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "ru.yandex.practicum.kafka.deserializer.SensorEventDeserializer");
                 config.put(ConsumerConfig.CLIENT_ID_CONFIG, clientId);
                 config.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
                 config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");

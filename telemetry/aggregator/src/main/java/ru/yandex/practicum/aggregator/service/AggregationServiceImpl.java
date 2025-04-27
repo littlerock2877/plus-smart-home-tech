@@ -1,4 +1,4 @@
-package ru.yandex.practicum.service;
+package ru.yandex.practicum.aggregator.service;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -15,7 +15,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class AggregationServiceImpl implements AggregationService {
+public class AggregationServiceImpl implements ru.yandex.practicum.aggregator.service.AggregationService {
     private final KafkaClient kafkaClient;
     private final KafkaTopicsConfig kafkaTopics;
     private Map<String, SensorsSnapshotAvro> snapshots = new HashMap<>();

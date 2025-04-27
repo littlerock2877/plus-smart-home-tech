@@ -1,4 +1,4 @@
-package ru.yandex.practicum.starter;
+package ru.yandex.practicum.aggregator.starter;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.configuration.kafka.KafkaClient;
 import ru.yandex.practicum.configuration.kafka.KafkaTopicsConfig;
 import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
-import ru.yandex.practicum.service.AggregationServiceImpl;
+import ru.yandex.practicum.aggregator.service.AggregationServiceImpl;
 
 import java.time.Duration;
 import java.util.HashMap;
@@ -40,6 +40,10 @@ public class AggregationStarter {
         producer = kafkaClient.getProducer();
 
         try {
+
+            System.out.println();
+            System.out.println("TOPICS = " + kafkaTopicsConfig.getSensors());
+            System.out.println();
             consumer.subscribe(List.of(kafkaTopicsConfig.getSensors()));
             while (true) {
                 ConsumerRecords<String, SpecificRecordBase> records = consumer.poll(CONSUME_ATTEMPT_TIMEOUT);
