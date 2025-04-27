@@ -40,10 +40,6 @@ public class AggregationStarter {
         producer = kafkaClient.getProducer();
 
         try {
-
-            System.out.println();
-            System.out.println("TOPICS = " + kafkaTopicsConfig.getSensors());
-            System.out.println();
             consumer.subscribe(List.of(kafkaTopicsConfig.getSensors()));
             while (true) {
                 ConsumerRecords<String, SpecificRecordBase> records = consumer.poll(CONSUME_ATTEMPT_TIMEOUT);
