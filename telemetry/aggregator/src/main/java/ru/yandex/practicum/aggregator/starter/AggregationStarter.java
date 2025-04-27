@@ -39,6 +39,7 @@ public class AggregationStarter {
         try {
             consumer.subscribe(List.of(kafkaTopicsConfig.getSensors()));
             while (true) {
+                log.debug("Polling new kafka records");
                 ConsumerRecords<String, SpecificRecordBase> records = consumer.poll(CONSUME_ATTEMPT_TIMEOUT);
                 int count = 0;
                 for (ConsumerRecord<String, SpecificRecordBase> record : records) {

@@ -1,6 +1,7 @@
 package ru.yandex.practicum.aggregator.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.configuration.kafka.KafkaClient;
@@ -13,6 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AggregationServiceImpl implements ru.yandex.practicum.aggregator.service.AggregationService {
@@ -21,6 +23,7 @@ public class AggregationServiceImpl implements ru.yandex.practicum.aggregator.se
     private Map<String, SensorsSnapshotAvro> snapshots = new HashMap<>();
 
     public void handleSensorEvent(SensorEventAvro event) {
+        log.info("Handling event with id {}", event.getId());
         updateState(event).ifPresent(snapshot -> kafkaClient.getProducer().send(new ProducerRecord<>(
                 kafkaTopics.getSnapshots(),
                 null,
@@ -33,6 +36,9 @@ public class AggregationServiceImpl implements ru.yandex.practicum.aggregator.se
     public Optional<SensorsSnapshotAvro> updateState(SensorEventAvro event) {
         SensorsSnapshotAvro snapshot = snapshots.computeIfAbsent(event.getHubId(), snap -> new SensorsSnapshotAvro());
 
+        if (snapshot.getSensorsState() == null) {
+            snapshot.setSensorsState(new HashMap<>());
+        }
         SensorStateAvro oldState = snapshot.getSensorsState().get(event.getId());
         if (oldState != null) {
             if (oldState.getTimestamp().isAfter(event.getTimestamp()) || oldState.getData().equals(event.getPayload())) {
