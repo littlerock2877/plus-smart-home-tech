@@ -41,7 +41,7 @@ public class SnapshotProcessor implements Runnable {
                 ConsumerRecords<String, SensorsSnapshotAvro> records = consumer.poll(CONSUME_ATTEMPT_TIMEOUT);
                 int count = 0;
                 for (ConsumerRecord<String, SensorsSnapshotAvro> record : records) {
-                    analyzerService.handleSnapshot(record.value());
+                    analyzerService.processSnapshot(record.value());
                     ConsumerUtil.manageOffsets(record, count, consumer, currentOffsets);
                     count++;
                 }
