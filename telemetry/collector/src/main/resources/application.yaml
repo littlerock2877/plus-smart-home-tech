@@ -3,9 +3,7 @@ grpc:
     port: 59091
 kafka:
   consumer:
-    group-id: collector-group
     client-id: collector
   topics:
     sensors: telemetry.sensors.v1
     hubs: telemetry.hubs.v1
-    snapshots: telemetry.snapshots.v1

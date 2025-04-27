@@ -1,4 +1,4 @@
-package ru.yandex.practicum.aggregator.starter;
+package ru.yandex.practicum.analyzer.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -9,10 +9,10 @@ import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.errors.WakeupException;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.analyzer.util.ConsumerUtil;
 import ru.yandex.practicum.configuration.kafka.KafkaClient;
 import ru.yandex.practicum.configuration.kafka.KafkaTopicsConfig;
-import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
-import ru.yandex.practicum.aggregator.service.AggregationServiceImpl;
+import ru.yandex.practicum.kafka.telemetry.event.SensorsSnapshotAvro;
 
 import java.time.Duration;
 import java.util.HashMap;
@@ -22,55 +22,40 @@ import java.util.Map;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class AggregationStarter {
+public class SnapshotProcessor implements Runnable {
     private static final Duration CONSUME_ATTEMPT_TIMEOUT = Duration.ofMillis(1000);
     private static final Map<TopicPartition, OffsetAndMetadata> currentOffsets = new HashMap<>();
 
     private final KafkaClient kafkaClient;
     private final KafkaTopicsConfig kafkaTopicsConfig;
-    private final AggregationServiceImpl aggregationService;
-    private Consumer<String, SensorEventAvro> consumer;
+    private final AnalyzerService analyzerService;
 
-    public void start() {
-        consumer = kafkaClient.getSensorEventConsumer();
+    @Override
+    public void run() {
+        Consumer<String, SensorsSnapshotAvro> consumer = kafkaClient.getSnapshotConsumer();
 
         try {
-            consumer.subscribe(List.of(kafkaTopicsConfig.getSensors()));
+            consumer.subscribe(List.of(kafkaTopicsConfig.getSnapshots()));
+
             while (true) {
-                ConsumerRecords<String, SensorEventAvro> records = consumer.poll(CONSUME_ATTEMPT_TIMEOUT);
+                ConsumerRecords<String, SensorsSnapshotAvro> records = consumer.poll(CONSUME_ATTEMPT_TIMEOUT);
                 int count = 0;
-                for (ConsumerRecord<String, SensorEventAvro> record : records) {
-                    aggregationService.handleSensorEvent(record.value());
-                    manageOffsets(record, count);
+                for (ConsumerRecord<String, SensorsSnapshotAvro> record : records) {
+                    analyzerService.handleSnapshot(record.value());
+                    ConsumerUtil.manageOffsets(record, count, consumer, currentOffsets);
                     count++;
                 }
                 consumer.commitAsync();
             }
-
         } catch (WakeupException ignored) {
         } catch (Exception e) {
-            log.error("Error while handling sensor events", e);
+            log.error("Error while handling snapshot", e);
         } finally {
             try {
                 consumer.commitSync(currentOffsets);
             } finally {
                 kafkaClient.stop();
             }
-        }
-    }
-
-    private void manageOffsets(ConsumerRecord<String, SensorEventAvro>   record, int count) {
-        currentOffsets.put(
-                new TopicPartition(record.topic(), record.partition()),
-                new OffsetAndMetadata(record.offset() + 1)
-        );
-
-        if(count % 10 == 0) {
-            consumer.commitAsync(currentOffsets, (offsets, exception) -> {
-                if(exception != null) {
-                    log.warn("Error while commiting offsets: {}", offsets, exception);
-                }
-            });
         }
     }
 }

@@ -11,32 +11,44 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
+import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
+import ru.yandex.practicum.kafka.telemetry.event.SensorsSnapshotAvro;
 
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Configuration
 public class KafkaClientConfiguration {
-    @Value("${kafka.consumer.group-id}")
-    private String groupId;
-
     @Value("${kafka.consumer.client-id}")
     private String clientId;
 
-    private AtomicBoolean shuttingDown = new AtomicBoolean(false);
+    private AtomicBoolean shuttingDownSensorEvent = new AtomicBoolean(false);
+    private AtomicBoolean shuttingDownSnapshot = new AtomicBoolean(false);
+    private AtomicBoolean shuttingDownHubEvent = new AtomicBoolean(false);
 
     @Bean
     KafkaClient getClient() {
         return new KafkaClient() {
-            private Consumer<String, SpecificRecordBase> consumer;
+            private Consumer<String, SensorEventAvro> sensorEventConsumer;
+            private Consumer<String, SensorsSnapshotAvro> snapshotConsumer;
+            private Consumer<String, HubEventAvro> hubEventConsumer;
             private Producer<String, SpecificRecordBase> producer;
 
             @Override
-            public Consumer<String, SpecificRecordBase> getConsumer() {
-                if (consumer == null) {
-                    initConsumer();
+            public Consumer<String, SensorEventAvro> getSensorEventConsumer() {
+                if (sensorEventConsumer == null) {
+                    initSensorEventConsumer();
                 }
-                return consumer;
+                return sensorEventConsumer;
+            }
+
+            @Override
+            public Consumer<String, SensorsSnapshotAvro> getSnapshotConsumer() {
+                if (snapshotConsumer == null) {
+                    initSnapshotConsumer();
+                }
+                return snapshotConsumer;
             }
 
             @Override
@@ -45,6 +57,14 @@ public class KafkaClientConfiguration {
                     initProducer();
                 }
                 return producer;
+            }
+
+            @Override
+            public Consumer<String, HubEventAvro> getHubEventConsumer() {
+                if (hubEventConsumer == null) {
+                    initHubEventConsumer();
+                }
+                return hubEventConsumer;
             }
 
             private void initProducer() {
@@ -56,30 +76,76 @@ public class KafkaClientConfiguration {
                 producer = new KafkaProducer<>(config);
             }
 
-            private void initConsumer() {
+            private void initSensorEventConsumer() {
                 Properties config = new Properties();
                 config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
                 config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
                 config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "ru.yandex.practicum.kafka.deserializer.SensorEventDeserializer");
                 config.put(ConsumerConfig.CLIENT_ID_CONFIG, clientId);
-                config.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+                config.put(ConsumerConfig.GROUP_ID_CONFIG, "sensor-event-group");
                 config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
 
-                consumer = new KafkaConsumer<>(config);
+                sensorEventConsumer = new KafkaConsumer<>(config);
                 Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                    shuttingDown.set(true);
-                    consumer.wakeup();
+                    shuttingDownSensorEvent.set(true);
+                    sensorEventConsumer.wakeup();
+                }));
+            }
+
+            private void initSnapshotConsumer() {
+                Properties config = new Properties();
+                config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+                config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
+                config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "ru.yandex.practicum.kafka.deserializer.SnapshotDeserializer");
+                config.put(ConsumerConfig.CLIENT_ID_CONFIG, clientId);
+                config.put(ConsumerConfig.GROUP_ID_CONFIG, "snapshot-group");
+                config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+
+                snapshotConsumer = new KafkaConsumer<>(config);
+                Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                    shuttingDownSnapshot.set(true);
+                    snapshotConsumer.wakeup();
+                }));
+            }
+
+            private void initHubEventConsumer() {
+                Properties config = new Properties();
+                config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+                config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
+                config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "ru.yandex.practicum.kafka.deserializer.HubEventDeserializer");
+                config.put(ConsumerConfig.CLIENT_ID_CONFIG, clientId);
+                config.put(ConsumerConfig.GROUP_ID_CONFIG, "snapshot-group");
+                config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+
+                hubEventConsumer = new KafkaConsumer<>(config);
+                Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                    shuttingDownHubEvent.set(true);
+                    hubEventConsumer.wakeup();
                 }));
             }
 
             @PreDestroy
             @Override
             public void stop() {
-                if (consumer != null) {
-                    if (!shuttingDown.get()) {
-                        consumer.wakeup();
+                if (sensorEventConsumer != null) {
+                    if (!shuttingDownSensorEvent.get()) {
+                        sensorEventConsumer.wakeup();
                     }
-                    consumer.close();
+                    sensorEventConsumer.close();
+                }
+
+                if (snapshotConsumer != null) {
+                    if (!shuttingDownSnapshot.get()) {
+                        snapshotConsumer.wakeup();
+                    }
+                    snapshotConsumer.close();
+                }
+
+                if (hubEventConsumer != null) {
+                    if (!shuttingDownHubEvent.get()) {
+                        hubEventConsumer.wakeup();
+                    }
+                    hubEventConsumer.close();
                 }
 
                 if (producer != null) {
