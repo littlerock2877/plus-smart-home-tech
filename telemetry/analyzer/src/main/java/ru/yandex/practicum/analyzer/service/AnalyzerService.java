@@ -3,9 +3,9 @@ package ru.yandex.practicum.analyzer.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.analyzer.controller.HubRouterController;
 import ru.yandex.practicum.analyzer.eveluator.ConditionEvaluator;
 import ru.yandex.practicum.analyzer.eveluator.ConditionEvaluatorFactory;
+import ru.yandex.practicum.analyzer.grpc.HubRouterClient;
 import ru.yandex.practicum.analyzer.model.Action;
 import ru.yandex.practicum.analyzer.model.Condition;
 import ru.yandex.practicum.analyzer.model.Scenario;
@@ -20,7 +20,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AnalyzerService {
     private final ScenarioRepository scenarioRepository;
-    private final HubRouterController hubRouterController;
+    private final HubRouterClient hubRouterClient;
 
     public void handleSnapshot(SensorsSnapshotAvro snapshot) {
         String hubId = snapshot.getHubId();
@@ -59,7 +59,7 @@ public class AnalyzerService {
     private void executeActions(Scenario scenario, String hubId) {
         List<Action> actions = scenario.getActions();
         for (Action action : actions) {
-            hubRouterController.doAction(scenario, action, hubId);
+            hubRouterClient.executeAction(action, hubId);
             log.info("Executing action: {} for hubId: {}", action, hubId);
         }
     }
