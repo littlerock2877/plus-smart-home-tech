@@ -7,7 +7,6 @@ import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
-import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.errors.WakeupException;
 import org.springframework.stereotype.Component;
@@ -33,11 +32,9 @@ public class AggregationStarter {
     private final KafkaTopicsConfig kafkaTopicsConfig;
     private final AggregationServiceImpl aggregationService;
     private Consumer<String, SpecificRecordBase> consumer;
-    private Producer<String, SpecificRecordBase> producer;
 
     public void start() {
         consumer = kafkaClient.getConsumer();
-        producer = kafkaClient.getProducer();
 
         try {
             consumer.subscribe(List.of(kafkaTopicsConfig.getSensors()));
