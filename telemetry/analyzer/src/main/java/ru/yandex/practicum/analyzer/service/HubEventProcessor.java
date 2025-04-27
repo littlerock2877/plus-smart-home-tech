@@ -65,10 +65,8 @@ public class HubEventProcessor implements Runnable {
         }
     }
 
-    @KafkaListener(topics = "${kafka.topics.hubs}")
-    public void sendToService(ConsumerRecord<String, HubEventAvro> record) {
+    private void sendToService(ConsumerRecord<String, HubEventAvro> record) {
         HubEventAvro event = record.value();
-
         switch (event.getPayload()) {
             case DeviceAddedEventAvro deviceAddedEvent ->
                     sensorService.addSensor(deviceAddedEvent.getId(), event.getHubId());
@@ -77,8 +75,8 @@ public class HubEventProcessor implements Runnable {
             case ScenarioAddedEventAvro scenarioAddedEvent ->
                     scenarioService.addScenario(scenarioAddedEvent, event.getHubId());
             case ScenarioRemovedEventAvro scenarioRemovedEvent ->
-                    scenarioService.deleteScenario(scenarioRemovedEvent.getName());
-            case null, default -> log.warn("Unknown event type: {}", event.getPayload().getClass().getName());
+                    scenarioService.deleteScenario(scenarioRemovedEvent.getName(), event.getHubId());
+            default -> log.warn("Unknown event type: {}", event.getPayload().getClass().getName());
         }
     }
 }

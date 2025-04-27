@@ -15,14 +15,13 @@ grpc:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5433/analyzer
-    username: analyzer
-    password: analyzer
-    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: admin
+    password: admin
+
   jpa:
     hibernate:
-      ddl-auto: update
-      dialect: org.hibernate.dialect.PostgreSQLDialect
+      ddl-auto: validate
     show-sql: true
     properties:
       hibernate:

@@ -26,8 +26,8 @@ public class AnalyzerRunner {
     private ExecutorService executorService = Executors.newFixedThreadPool(THREADS_COUNT);
 
     public void run() {
-        executorService.execute(new SnapshotProcessor(kafkaClient, kafkaTopicsConfig, analyzerService));
         executorService.execute(new HubEventProcessor(kafkaClient, kafkaTopicsConfig, sensorService, scenarioService));
+        executorService.execute(new SnapshotProcessor(kafkaClient, kafkaTopicsConfig, analyzerService));
     }
 
     @PreDestroy
