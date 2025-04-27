@@ -37,21 +37,18 @@ public class Scenario {
     private String name;
 
     @ManyToMany
-    @JoinTable(name = "scenario_conditions",
+    @JoinTable(
+            name = "scenario_conditions",
             joinColumns = @JoinColumn(name = "scenario_id"),
-            inverseJoinColumns = {
-                    @JoinColumn(name = "sensor_id"),
-                    @JoinColumn(name = "condition_id")
-            }
+            inverseJoinColumns = @JoinColumn(name = "condition_id") // Ссылка только на id из Condition
     )
     private List<Condition> conditions;
 
     @ManyToMany
-    @JoinTable(name = "scenario_actions",
+    @JoinTable(
+            name = "scenario_actions",
             joinColumns = @JoinColumn(name = "scenario_id"),
-            inverseJoinColumns = {
-                    @JoinColumn(name = "sensor_id"),
-                    @JoinColumn(name = "action_id")
-            })
+            inverseJoinColumns = @JoinColumn(name = "action_id") // Ссылка только на id из Action
+    )
     private List<Action> actions;
 }
