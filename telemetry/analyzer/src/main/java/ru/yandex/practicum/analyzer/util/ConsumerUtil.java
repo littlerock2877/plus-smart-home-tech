@@ -7,12 +7,10 @@ import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
-import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
 @UtilityClass
-@Component
 @Slf4j
 public class ConsumerUtil {
     public void manageOffsets(ConsumerRecord<String, ? extends SpecificRecordBase> record, int count,
