@@ -1,0 +1,81 @@
+package ru.yandex.practicum.starter;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.avro.specific.SpecificRecordBase;
+import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.OffsetAndMetadata;
+import org.apache.kafka.clients.producer.Producer;
+import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.errors.WakeupException;
+import org.springframework.stereotype.Component;
+import ru.yandex.practicum.configuration.kafka.KafkaClient;
+import ru.yandex.practicum.configuration.kafka.KafkaTopicsConfig;
+import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
+import ru.yandex.practicum.service.AggregationServiceImpl;
+
+import java.time.Duration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+
+@Slf4j
+@Component
+@RequiredArgsConstructor
+public class AggregationStarter {
+    private static final Duration CONSUME_ATTEMPT_TIMEOUT = Duration.ofMillis(1000);
+    private static final Map<TopicPartition, OffsetAndMetadata> currentOffsets = new HashMap<>();
+
+    private final KafkaClient kafkaClient;
+    private final KafkaTopicsConfig kafkaTopicsConfig;
+    private final AggregationServiceImpl aggregationService;
+    private Consumer<String, SpecificRecordBase> consumer;
+    private Producer<String, SpecificRecordBase> producer;
+
+    public void start() {
+        consumer = kafkaClient.getConsumer();
+        producer = kafkaClient.getProducer();
+
+        try {
+            consumer.subscribe(List.of(kafkaTopicsConfig.getSensors()));
+            while (true) {
+                ConsumerRecords<String, SpecificRecordBase> records = consumer.poll(CONSUME_ATTEMPT_TIMEOUT);
+                int count = 0;
+                for (ConsumerRecord<String, SpecificRecordBase> record : records) {
+                    aggregationService.handleSensorEvent((SensorEventAvro) record.value());
+                    manageOffsets(record, count);
+                    count++;
+                }
+                consumer.commitAsync();
+            }
+
+        } catch (WakeupException ignored) {
+        } catch (Exception e) {
+            log.error("Error while handling sensor events", e);
+        } finally {
+            try {
+                consumer.commitSync(currentOffsets);
+            } finally {
+                kafkaClient.stop();
+            }
+        }
+    }
+
+    private void manageOffsets(ConsumerRecord<String, SpecificRecordBase> record, int count) {
+        currentOffsets.put(
+                new TopicPartition(record.topic(), record.partition()),
+                new OffsetAndMetadata(record.offset() + 1)
+        );
+
+        if(count % 10 == 0) {
+            consumer.commitAsync(currentOffsets, (offsets, exception) -> {
+                if(exception != null) {
+                    log.warn("Error while commiting offsets: {}", offsets, exception);
+                }
+            });
+        }
+    }
+}

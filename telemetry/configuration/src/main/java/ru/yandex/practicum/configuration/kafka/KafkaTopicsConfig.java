@@ -12,4 +12,5 @@ import org.springframework.stereotype.Component;
 public class KafkaTopicsConfig {
     private String sensors;
     private String hubs;
+    private String snapshots;
 }
