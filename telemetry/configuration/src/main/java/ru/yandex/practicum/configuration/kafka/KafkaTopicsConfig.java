@@ -1,4 +1,4 @@
-package ru.yandex.practicum.collector.configuration;
+package ru.yandex.practicum.configuration.kafka;
 
 import lombok.Getter;
 import lombok.Setter;

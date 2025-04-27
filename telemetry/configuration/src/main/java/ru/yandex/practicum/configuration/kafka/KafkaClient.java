@@ -1,4 +1,4 @@
-package ru.yandex.practicum.collector.configuration;
+package ru.yandex.practicum.configuration.kafka;
 
 import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.clients.consumer.Consumer;
