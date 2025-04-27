@@ -40,7 +40,7 @@ public class Scenario {
     @JoinTable(
             name = "scenario_conditions",
             joinColumns = @JoinColumn(name = "scenario_id"),
-            inverseJoinColumns = @JoinColumn(name = "condition_id") // Ссылка только на id из Condition
+            inverseJoinColumns = @JoinColumn(name = "condition_id")
     )
     private List<Condition> conditions;
 
@@ -48,7 +48,7 @@ public class Scenario {
     @JoinTable(
             name = "scenario_actions",
             joinColumns = @JoinColumn(name = "scenario_id"),
-            inverseJoinColumns = @JoinColumn(name = "action_id") // Ссылка только на id из Action
+            inverseJoinColumns = @JoinColumn(name = "action_id")
     )
     private List<Action> actions;
 }
