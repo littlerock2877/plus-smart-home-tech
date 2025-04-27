@@ -16,7 +16,6 @@ import ru.yandex.practicum.grpc.telemetry.hubrouter.HubRouterControllerGrpc;
 public class HubRouterController {
     private final HubRouterControllerGrpc.HubRouterControllerBlockingStub hubRouterClient;
 
-
     public void doAction(Scenario scenario, Action action, String hubId) {
         DeviceActionRequest request = DeviceActionRequest.newBuilder()
                 .setHubId(hubId)
