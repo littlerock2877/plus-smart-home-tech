@@ -1,4 +1,4 @@
-package ru.yandex.practicum.collector.configuration;
+package ru.yandex.practicum.configuration.kafka;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -12,4 +12,5 @@ import org.springframework.stereotype.Component;
 public class KafkaTopicsConfig {
     private String sensors;
     private String hubs;
+    private String snapshots;
 }

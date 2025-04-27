@@ -1,10 +1,7 @@
-grpc:
-  server:
-    port: 59091
 kafka:
   consumer:
-    group-id: collector-group
-    client-id: collector
+    group-id: aggregator-group
+    client-id: aggregator
   topics:
     sensors: telemetry.sensors.v1
     hubs: telemetry.hubs.v1
