@@ -74,8 +74,8 @@ public class HubEventProcessor implements Runnable {
             case ScenarioAddedEventAvro scenarioAddedEvent ->
                     scenarioService.addScenario(scenarioAddedEvent, event.getHubId());
             case ScenarioRemovedEventAvro scenarioRemovedEvent ->
-                    scenarioService.deleteScenario(scenarioRemovedEvent.getName(), event.getHubId());
-            default -> log.warn("Unknown event type: {}", event.getPayload().getClass().getName());
+                    scenarioService.deleteScenario(scenarioRemovedEvent.getName());
+            case null, default -> log.warn("Unknown event type: {}", event.getPayload().getClass().getName());
         }
     }
 }

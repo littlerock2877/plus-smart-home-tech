@@ -1,17 +1,22 @@
 package ru.yandex.practicum.analyzer.service;
 
+
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.analyzer.controller.HubRouterController;
-import ru.yandex.practicum.analyzer.evaluator.ConditionEvaluator;
-import ru.yandex.practicum.analyzer.evaluator.ConditionEvaluatorFactory;
+import ru.yandex.practicum.analyzer.grpc.HubRouterClient;
 import ru.yandex.practicum.analyzer.model.Action;
 import ru.yandex.practicum.analyzer.model.Condition;
+import ru.yandex.practicum.analyzer.model.ConditionOperation;
 import ru.yandex.practicum.analyzer.model.Scenario;
-import ru.yandex.practicum.analyzer.repository.ScenarioRepository;
+import ru.yandex.practicum.kafka.telemetry.event.ClimateSensorAvro;
+import ru.yandex.practicum.kafka.telemetry.event.LightSensorAvro;
+import ru.yandex.practicum.kafka.telemetry.event.MotionSensorAvro;
 import ru.yandex.practicum.kafka.telemetry.event.SensorStateAvro;
 import ru.yandex.practicum.kafka.telemetry.event.SensorsSnapshotAvro;
+import ru.yandex.practicum.kafka.telemetry.event.SwitchSensorAvro;
+import ru.yandex.practicum.kafka.telemetry.event.TemperatureSensorAvro;
 
 import java.util.List;
 
@@ -19,47 +24,95 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class AnalyzerService {
-    private final ScenarioRepository scenarioRepository;
-    private final HubRouterController hubRouterController;
+    private final ScenarioService scenarioService;
+    private final HubRouterClient hubRouterClient;
 
-    public void handleSnapshot(SensorsSnapshotAvro snapshot) {
+    public void processSnapshot(SensorsSnapshotAvro snapshot) {
         String hubId = snapshot.getHubId();
         log.info("Processing snapshot for hubId: {}", hubId);
 
-        List<Scenario> scenarios = scenarioRepository.findByHubId(hubId);
+        List<Scenario> scenarios = scenarioService.getScenariosByHubId(hubId);
 
-        scenarios.stream()
-                .filter(scenario -> isScenarioTriggered(scenario, snapshot))
-                .forEach(scenario -> executeActions(scenario, hubId));
+        for (Scenario scenario : scenarios) {
+            if (isScenarioTriggered(scenario, snapshot)) {
+                executeActions(scenario.getActions(), hubId);
+            }
+        }
     }
 
     private boolean isScenarioTriggered(Scenario scenario, SensorsSnapshotAvro snapshot) {
-        return scenario.getConditions().stream()
-                .allMatch(condition -> checkCondition(condition, snapshot));
+        for (Condition condition : scenario.getConditions()) {
+            if (!checkCondition(condition, snapshot)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private boolean checkCondition(Condition condition, SensorsSnapshotAvro snapshot) {
         SensorStateAvro sensorState = snapshot.getSensorsState().get(condition.getSensorId());
+
+        if (sensorState == null) {
+            log.warn("Sensor data for sensorId {} is missing in the snapshot", condition.getSensorId());
+            return false;
+        }
+
         try {
-            if (sensorState == null) {
-                log.warn("Sensor data for sensorId {} is missing in the snapshot", condition.getSensorId());
-                return false;
+            // Проверка типа данных и приведение
+            switch (condition.getType()) {
+                case TEMPERATURE:
+                    if (sensorState.getData() instanceof TemperatureSensorAvro tempSensor) {
+                        return evaluateCondition(tempSensor.getTemperatureC(), condition.getOperation(), condition.getValue());
+                    }
+                    break;
+                case HUMIDITY:
+                    if (sensorState.getData() instanceof ClimateSensorAvro climateSensor) {
+                        return evaluateCondition(climateSensor.getHumidity(), condition.getOperation(), condition.getValue());
+                    }
+                    break;
+                case CO2LEVEL:
+                    if (sensorState.getData() instanceof ClimateSensorAvro climateSensor) {
+                        return evaluateCondition(climateSensor.getCo2Level(), condition.getOperation(), condition.getValue());
+                    }
+                    break;
+                case LUMINOSITY:
+                    if (sensorState.getData() instanceof LightSensorAvro lightSensor) {
+                        return evaluateCondition(lightSensor.getLuminosity(), condition.getOperation(), condition.getValue());
+                    }
+                    break;
+                case MOTION:
+                    if (sensorState.getData() instanceof MotionSensorAvro motionSensor) {
+                        int motionValue = motionSensor.getMotion() ? 1 : 0;
+                        return evaluateCondition(motionValue, condition.getOperation(), condition.getValue());
+                    }
+                    break;
+                case SWITCH:
+                    if (sensorState.getData() instanceof SwitchSensorAvro switchSensor) {
+                        int switchState = switchSensor.getState() ? 1 : 0;
+                        return evaluateCondition(switchState, condition.getOperation(), condition.getValue());
+                    }
+                    break;
+                default:
+                    log.warn("Unsupported condition type: {}", condition.getType());
+                    return false;
             }
-
-            Object sensorData = sensorState.getData();
-            ConditionEvaluator evaluator = ConditionEvaluatorFactory.getEvaluator(condition.getType());
-            return evaluator.evaluate(sensorData, condition.getOperation(), condition.getValue());
-
         } catch (Exception e) {
             log.error("Error checking condition {}: {}", condition, e.getMessage());
         }
         return false;
     }
 
-    private void executeActions(Scenario scenario, String hubId) {
-        List<Action> actions = scenario.getActions();
+    private boolean evaluateCondition(int sensorValue, ConditionOperation operation, int targetValue) {
+        return switch (operation) {
+            case EQUALS -> sensorValue == targetValue;
+            case GREATER_THAN -> sensorValue > targetValue;
+            case LOWER_THAN -> sensorValue < targetValue;
+        };
+    }
+
+    private void executeActions(List<Action> actions, String hubId) {
         for (Action action : actions) {
-            hubRouterController.doAction(scenario, action, hubId);
+            hubRouterClient.executeAction(action, hubId);
             log.info("Executing action: {} for hubId: {}", action, hubId);
         }
     }

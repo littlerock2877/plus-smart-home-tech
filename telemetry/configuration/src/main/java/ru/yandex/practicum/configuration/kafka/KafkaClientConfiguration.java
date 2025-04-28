@@ -127,30 +127,33 @@ public class KafkaClientConfiguration {
             @PreDestroy
             @Override
             public void stop() {
-                if (sensorEventConsumer != null) {
-                    if (!shuttingDownSensorEvent.get()) {
-                        sensorEventConsumer.wakeup();
+                // Синхронизация для безопасного закрытия
+                synchronized (this) {
+                    if (sensorEventConsumer != null) {
+                        if (!shuttingDownSensorEvent.get()) {
+                            sensorEventConsumer.wakeup();
+                        }
+                        sensorEventConsumer.close();
                     }
-                    sensorEventConsumer.close();
-                }
 
-                if (snapshotConsumer != null) {
-                    if (!shuttingDownSnapshot.get()) {
-                        snapshotConsumer.wakeup();
+                    if (snapshotConsumer != null) {
+                        if (!shuttingDownSnapshot.get()) {
+                            snapshotConsumer.wakeup();
+                        }
+                        snapshotConsumer.close();
                     }
-                    snapshotConsumer.close();
-                }
 
-                if (hubEventConsumer != null) {
-                    if (!shuttingDownHubEvent.get()) {
-                        hubEventConsumer.wakeup();
+                    if (hubEventConsumer != null) {
+                        if (!shuttingDownHubEvent.get()) {
+                            hubEventConsumer.wakeup();
+                        }
+                        hubEventConsumer.close();
                     }
-                    hubEventConsumer.close();
-                }
 
-                if (producer != null) {
-                    producer.flush();
-                    producer.close();
+                    if (producer != null) {
+                        producer.flush();
+                        producer.close();
+                    }
                 }
             }
         };
