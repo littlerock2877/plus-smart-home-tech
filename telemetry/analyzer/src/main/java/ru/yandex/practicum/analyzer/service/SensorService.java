@@ -1,7 +1,6 @@
 package ru.yandex.practicum.analyzer.service;
 
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -16,7 +15,6 @@ import java.util.NoSuchElementException;
 public class SensorService {
     private final SensorRepository sensorRepository;
 
-    @Transactional
     public Sensor addSensor(String deviceId, String hubId) {
         if (isSensorExist(deviceId)) {
             throw new IllegalArgumentException("Sensor with id " + deviceId + " already exists");
@@ -24,7 +22,6 @@ public class SensorService {
         return sensorRepository.save(new Sensor(deviceId, hubId));
     }
 
-    @Transactional
     public void removeSensor(String deviceId, String hubId) {
         Sensor savedSensor = findSensorById(deviceId);
         sensorRepository.delete(savedSensor);
