@@ -60,6 +60,8 @@ public class AnalyzerService {
                 case TEMPERATURE:
                     if (sensorState.getData() instanceof TemperatureSensorAvro tempSensor) {
                         return evaluateCondition(tempSensor.getTemperatureC(), condition.getOperation(), condition.getValue());
+                    } else if (sensorState.getData() instanceof ClimateSensorAvro climateSensor) {
+                        return evaluateCondition(climateSensor.getTemperatureC(), condition.getOperation(), condition.getValue());
                     }
                     break;
                 case HUMIDITY:
