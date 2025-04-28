@@ -81,7 +81,7 @@ public class KafkaClientConfiguration {
                 config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
                 config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
                 config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "ru.yandex.practicum.kafka.deserializer.SensorEventDeserializer");
-                config.put(ConsumerConfig.CLIENT_ID_CONFIG, clientId);
+                config.put(ConsumerConfig.CLIENT_ID_CONFIG, "sensor_%s".formatted(clientId));
                 config.put(ConsumerConfig.GROUP_ID_CONFIG, "sensor-event-group");
                 config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
 
@@ -97,7 +97,7 @@ public class KafkaClientConfiguration {
                 config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
                 config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
                 config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "ru.yandex.practicum.kafka.deserializer.SnapshotDeserializer");
-                config.put(ConsumerConfig.CLIENT_ID_CONFIG, clientId);
+                config.put(ConsumerConfig.CLIENT_ID_CONFIG, "snapshot_%s".formatted(clientId));
                 config.put(ConsumerConfig.GROUP_ID_CONFIG, "snapshot-group");
                 config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
 
@@ -113,7 +113,7 @@ public class KafkaClientConfiguration {
                 config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
                 config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
                 config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "ru.yandex.practicum.kafka.deserializer.HubEventDeserializer");
-                config.put(ConsumerConfig.CLIENT_ID_CONFIG, clientId);
+                config.put(ConsumerConfig.CLIENT_ID_CONFIG, "hub_%s".formatted(clientId));
                 config.put(ConsumerConfig.GROUP_ID_CONFIG, "snapshot-group");
                 config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
 
