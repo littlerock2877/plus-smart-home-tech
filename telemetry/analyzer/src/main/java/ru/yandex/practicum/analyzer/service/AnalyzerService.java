@@ -1,7 +1,5 @@
 package ru.yandex.practicum.analyzer.service;
 
-
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -58,7 +56,6 @@ public class AnalyzerService {
         }
 
         try {
-            // Проверка типа данных и приведение
             switch (condition.getType()) {
                 case TEMPERATURE:
                     if (sensorState.getData() instanceof TemperatureSensorAvro tempSensor) {

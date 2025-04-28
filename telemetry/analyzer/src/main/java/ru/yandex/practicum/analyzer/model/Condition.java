@@ -45,7 +45,7 @@ public class Condition {
     @Column(name = "value")
     private Integer value;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "scenario_id", nullable = false)
     @ToString.Exclude
     private Scenario scenario;

@@ -17,7 +17,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class ScenarioService {
-
     private final ScenarioRepository scenarioRepository;
 
     public List<Scenario> getScenariosByHubId(String hubId) {
@@ -34,7 +33,7 @@ public class ScenarioService {
                         .sensorId(conditionEvent.getSensorId())
                         .type(ConditionType.valueOf(conditionEvent.getType().name()))
                         .operation(ConditionOperation.valueOf(conditionEvent.getOperation().name()))
-                        .value(convertToInteger(conditionEvent.getValue())) // Преобразование value
+                        .value(convertToInteger(conditionEvent.getValue()))
                         .scenario(scenario)
                         .build())
                 .collect(Collectors.toList());
@@ -43,7 +42,7 @@ public class ScenarioService {
                 .map(actionEvent -> Action.builder()
                         .sensorId(actionEvent.getSensorId())
                         .type(ActionType.valueOf(actionEvent.getType().name()))
-                        .value(actionEvent.getValue() != null ? actionEvent.getValue() : 0) // Преобразование null в 0
+                        .value(actionEvent.getValue() != null ? actionEvent.getValue() : 0)
                         .scenario(scenario)
                         .build())
                 .collect(Collectors.toList());
