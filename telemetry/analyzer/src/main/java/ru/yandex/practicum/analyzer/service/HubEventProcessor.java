@@ -8,6 +8,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.errors.WakeupException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.analyzer.util.ConsumerUtil;
 import ru.yandex.practicum.configuration.kafka.KafkaClient;
@@ -27,13 +28,15 @@ import java.util.Map;
 @Component
 @RequiredArgsConstructor
 public class HubEventProcessor implements Runnable {
-    private static final Duration CONSUME_ATTEMPT_TIMEOUT = Duration.ofMillis(1000);
     private static final Map<TopicPartition, OffsetAndMetadata> currentOffsets = new HashMap<>();
 
     private final KafkaClient kafkaClient;
     private final KafkaTopicsConfig kafkaTopicsConfig;
     private final SensorService sensorService;
     private final ScenarioService scenarioService;
+
+    @Value("${kafka.consumer.attempt-timeout}")
+    private int attemptTimeout;
 
     @Override
     public void run() {
@@ -43,7 +46,7 @@ public class HubEventProcessor implements Runnable {
             consumer.subscribe(List.of(kafkaTopicsConfig.getHubs()));
 
             while (true) {
-                ConsumerRecords<String, HubEventAvro> records = consumer.poll(CONSUME_ATTEMPT_TIMEOUT);
+                ConsumerRecords<String, HubEventAvro> records = consumer.poll(Duration.ofMillis(attemptTimeout));
                 int count = 0;
                 for (ConsumerRecord<String, HubEventAvro> record : records) {
                     sendToService(record);
@@ -59,7 +62,7 @@ public class HubEventProcessor implements Runnable {
             try {
                 consumer.commitSync(currentOffsets);
             } finally {
-                kafkaClient.stop();
+                kafkaClient.stopHubEventConsumer();
             }
         }
     }

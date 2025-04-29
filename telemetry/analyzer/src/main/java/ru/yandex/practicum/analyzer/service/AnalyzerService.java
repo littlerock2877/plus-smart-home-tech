@@ -31,11 +31,9 @@ public class AnalyzerService {
 
         List<Scenario> scenarios = scenarioService.getScenariosByHubId(hubId);
 
-        for (Scenario scenario : scenarios) {
-            if (isScenarioTriggered(scenario, snapshot)) {
-                executeActions(scenario.getActions(), hubId);
-            }
-        }
+        scenarios.stream()
+                .filter(scenario -> isScenarioTriggered(scenario, snapshot))
+                .forEach(scenario -> executeActions(scenario.getActions(), hubId));
     }
 
     private boolean isScenarioTriggered(Scenario scenario, SensorsSnapshotAvro snapshot) {

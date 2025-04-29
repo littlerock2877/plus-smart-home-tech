@@ -1,5 +1,6 @@
 package ru.yandex.practicum.analyzer.grpc;
 
+import com.google.protobuf.Timestamp;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +11,8 @@ import ru.yandex.practicum.grpc.telemetry.event.ActionTypeProto;
 import ru.yandex.practicum.grpc.telemetry.event.DeviceActionProto;
 import ru.yandex.practicum.grpc.telemetry.event.DeviceActionRequest;
 import ru.yandex.practicum.grpc.telemetry.hubrouter.HubRouterControllerGrpc;
+
+import java.time.Instant;
 
 @Slf4j
 @Service
@@ -25,8 +28,14 @@ public class HubRouterClient {
     }
 
     public void executeAction(Action action, String hubId) {
+        Instant now = Instant.now();
+        Timestamp timestamp = Timestamp.newBuilder()
+                .setSeconds(now.getEpochSecond())
+                .setNanos(now.getNano())
+                .build();
         DeviceActionRequest request = DeviceActionRequest.newBuilder()
                 .setHubId(hubId)
+                .setTimestamp(timestamp)
                 .setScenarioName(action.getScenario().getName())
                 .setAction(DeviceActionProto.newBuilder()
                         .setSensorId(action.getSensorId())

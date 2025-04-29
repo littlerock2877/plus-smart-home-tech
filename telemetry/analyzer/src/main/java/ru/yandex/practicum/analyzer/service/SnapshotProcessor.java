@@ -8,6 +8,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.errors.WakeupException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.analyzer.util.ConsumerUtil;
 import ru.yandex.practicum.configuration.kafka.KafkaClient;
@@ -23,12 +24,14 @@ import java.util.Map;
 @Component
 @RequiredArgsConstructor
 public class SnapshotProcessor implements Runnable {
-    private static final Duration CONSUME_ATTEMPT_TIMEOUT = Duration.ofMillis(1000);
     private static final Map<TopicPartition, OffsetAndMetadata> currentOffsets = new HashMap<>();
 
     private final KafkaClient kafkaClient;
     private final KafkaTopicsConfig kafkaTopicsConfig;
     private final AnalyzerService analyzerService;
+
+    @Value("${kafka.consumer.attempt-timeout}")
+    private int attemptTimeout;
 
     @Override
     public void run() {
@@ -38,7 +41,7 @@ public class SnapshotProcessor implements Runnable {
             consumer.subscribe(List.of(kafkaTopicsConfig.getSnapshots()));
 
             while (true) {
-                ConsumerRecords<String, SensorsSnapshotAvro> records = consumer.poll(CONSUME_ATTEMPT_TIMEOUT);
+                ConsumerRecords<String, SensorsSnapshotAvro> records = consumer.poll(Duration.ofMillis(attemptTimeout));
                 int count = 0;
                 for (ConsumerRecord<String, SensorsSnapshotAvro> record : records) {
                     analyzerService.processSnapshot(record.value());
@@ -54,7 +57,7 @@ public class SnapshotProcessor implements Runnable {
             try {
                 consumer.commitSync(currentOffsets);
             } finally {
-                kafkaClient.stop();
+                kafkaClient.stopSnapshotConsumer();
             }
         }
     }
