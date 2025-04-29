@@ -126,34 +126,43 @@ public class KafkaClientConfiguration {
 
             @PreDestroy
             @Override
-            public void stop() {
-                // Синхронизация для безопасного закрытия
-                synchronized (this) {
-                    if (sensorEventConsumer != null) {
-                        if (!shuttingDownSensorEvent.get()) {
-                            sensorEventConsumer.wakeup();
-                        }
-                        sensorEventConsumer.close();
-                    }
+            public void stopProducer() {
+                if (producer != null) {
+                    producer.flush();
+                    producer.close();
+                }
+            }
 
-                    if (snapshotConsumer != null) {
-                        if (!shuttingDownSnapshot.get()) {
-                            snapshotConsumer.wakeup();
-                        }
-                        snapshotConsumer.close();
+            @PreDestroy
+            @Override
+            public synchronized void stopSensorEventConsumer() {
+                if (sensorEventConsumer != null) {
+                    if (!shuttingDownSensorEvent.get()) {
+                        sensorEventConsumer.wakeup();
                     }
+                    sensorEventConsumer.close();
+                }
+            }
 
-                    if (hubEventConsumer != null) {
-                        if (!shuttingDownHubEvent.get()) {
-                            hubEventConsumer.wakeup();
-                        }
-                        hubEventConsumer.close();
+            @PreDestroy
+            @Override
+            public synchronized void stopSnapshotConsumer() {
+                if (snapshotConsumer != null) {
+                    if (!shuttingDownSnapshot.get()) {
+                        snapshotConsumer.wakeup();
                     }
+                    snapshotConsumer.close();
+                }
+            }
 
-                    if (producer != null) {
-                        producer.flush();
-                        producer.close();
+            @PreDestroy
+            @Override
+            public synchronized void stopHubEventConsumer() {
+                if (hubEventConsumer != null) {
+                    if (!shuttingDownHubEvent.get()) {
+                        hubEventConsumer.wakeup();
                     }
+                    hubEventConsumer.close();
                 }
             }
         };

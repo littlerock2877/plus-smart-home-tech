@@ -54,7 +54,7 @@ public class AggregationStarter {
             try {
                 consumer.commitSync(currentOffsets);
             } finally {
-                kafkaClient.stop();
+                kafkaClient.stopSensorEventConsumer();
             }
         }
     }

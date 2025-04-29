@@ -16,5 +16,11 @@ public interface KafkaClient {
 
     Consumer<String, HubEventAvro> getHubEventConsumer();
 
-    void stop();
+    void stopProducer();
+
+    void stopSensorEventConsumer();
+
+    void stopSnapshotConsumer();
+
+    void stopHubEventConsumer();
 }
