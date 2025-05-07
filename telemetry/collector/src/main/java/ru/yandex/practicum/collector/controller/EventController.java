@@ -1,39 +1,38 @@
 package ru.yandex.practicum.collector.controller;
 
-import jakarta.validation.Valid;
+import com.google.protobuf.Empty;
+import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.MediaType;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import ru.yandex.practicum.collector.model.event.hub.HubEvent;
-import ru.yandex.practicum.collector.model.event.sensor.SensorEvent;
+import net.devh.boot.grpc.server.service.GrpcService;
 import ru.yandex.practicum.collector.service.event.HubEventService;
 import ru.yandex.practicum.collector.service.event.SensorEventService;
+import ru.yandex.practicum.grpc.telemetry.collector.CollectorControllerGrpc;
+import ru.yandex.practicum.grpc.telemetry.event.HubEventProto;
+import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
 
-@Validated
-@RestController
-@Slf4j
-@RequestMapping(path = "/events", consumes = MediaType.APPLICATION_JSON_VALUE)
+@GrpcService
 @RequiredArgsConstructor
-public class EventController {
+@Slf4j
+public class EventController extends CollectorControllerGrpc.CollectorControllerImplBase {
     private final HubEventService hubEventService;
     private final SensorEventService sensorEventService;
 
-    @PostMapping("/sensors")
-    public void collectSensorEvent(@Valid @RequestBody SensorEvent request) {
+    @Override
+    public void collectSensorEvent(SensorEventProto request, StreamObserver<Empty> responseObserver) {
         log.info("Handling sensor event {} - Started", request);
         sensorEventService.handleEvent(request);
+        responseObserver.onNext(Empty.getDefaultInstance());
+        responseObserver.onCompleted();
         log.info("Handling sensor event {} - Finished", request);
     }
 
-    @PostMapping("/hubs")
-    public void collectHubEvent(@Valid @RequestBody HubEvent request) {
+    @Override
+    public void collectHubEvent(HubEventProto request, StreamObserver<Empty> responseObserver) {
         log.info("Handling hub event {} - Started", request);
         hubEventService.handleEvent(request);
+        responseObserver.onNext(Empty.getDefaultInstance());
+        responseObserver.onCompleted();
         log.info("Handling hub event {} - Finished", request);
     }
 }

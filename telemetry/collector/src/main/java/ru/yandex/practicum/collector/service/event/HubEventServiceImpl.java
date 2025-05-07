@@ -1,9 +1,8 @@
 package ru.yandex.practicum.collector.service.event;
 
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.collector.model.event.hub.HubEvent;
-import ru.yandex.practicum.collector.model.event.hub.HubEventType;
 import ru.yandex.practicum.collector.service.handler.hub.HubEventHandler;
+import ru.yandex.practicum.grpc.telemetry.event.HubEventProto;
 
 import java.util.List;
 import java.util.Map;
@@ -12,7 +11,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class HubEventServiceImpl implements HubEventService {
-    private final Map<HubEventType, HubEventHandler> hubEventHandlers;
+    private final Map<HubEventProto.PayloadCase, HubEventHandler> hubEventHandlers;
 
     public HubEventServiceImpl(List<HubEventHandler> hubEventHandlers) {
         this.hubEventHandlers = hubEventHandlers.stream()
@@ -20,11 +19,11 @@ public class HubEventServiceImpl implements HubEventService {
     }
 
     @Override
-    public void handleEvent(HubEvent request) {
-        if (hubEventHandlers.containsKey(request.getType())) {
-            hubEventHandlers.get(request.getType()).handle(request);
+    public void handleEvent(HubEventProto request) {
+        if (hubEventHandlers.containsKey(request.getPayloadCase())) {
+            hubEventHandlers.get(request.getPayloadCase()).handle(request);
         } else {
-            throw new IllegalArgumentException(String.format("Handler for event with type %s not found", request.getType()));
+            throw new IllegalArgumentException(String.format("Handler for event with type %s not found", request.getPayloadCase()));
         }
     }
 }
