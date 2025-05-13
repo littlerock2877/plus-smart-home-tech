@@ -1,0 +1,9 @@
+grpc:
+  server:
+    port: 59091
+kafka:
+  consumer:
+    client-id: collector
+  topics:
+    sensors: telemetry.sensors.v1
+    hubs: telemetry.hubs.v1

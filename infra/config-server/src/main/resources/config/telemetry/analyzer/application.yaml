@@ -1,0 +1,29 @@
+kafka:
+  consumer:
+    client-id: analyzer
+    attempt-timeout: 1000
+  topics:
+    hubs: telemetry.hubs.v1
+    snapshots: telemetry.snapshots.v1
+
+grpc:
+  client:
+    hub-router:
+      address: 'static://localhost:59090'
+      enableKeepAlive: true
+      keepAliveWithoutCalls: true
+      negotiationType: plaintext
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/telemetry_analyzer
+    username: postgres
+    password: password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
