@@ -1,6 +1,11 @@
-kafka:
-  consumer:
-    client-id: aggregator
-  topics:
-    sensors: telemetry.sensors.v1
-    snapshots: telemetry.snapshots.v1
+spring:
+  application:
+    name: aggregator
+  config:
+    import: configserver:http://localhost:8888
+cloud:
+  config:
+    fail-fast: true
+    retry:
+      useRandomPolicy: true
+      max-interval: 6000
