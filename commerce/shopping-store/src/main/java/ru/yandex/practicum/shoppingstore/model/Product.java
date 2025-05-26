@@ -6,6 +6,7 @@ import ru.yandex.practicum.iteractionapi.enums.ProductCategory;
 import ru.yandex.practicum.iteractionapi.enums.ProductState;
 import ru.yandex.practicum.iteractionapi.enums.QuantityState;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Entity
@@ -26,6 +27,6 @@ public class Product {
     private ProductState productState;
     @Enumerated(EnumType.STRING)
     private ProductCategory productCategory;
-    private double price;
+    private BigDecimal price;
     private int rating;
 }

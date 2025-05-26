@@ -16,3 +16,6 @@ spring:
     url: jdbc:postgresql://localhost:8432/warehouse-db
     username: warehouse
     password: warehouse
+
+server:
+  port: 0
