@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.iteractionapi.client.OrderClient;
 import ru.yandex.practicum.iteractionapi.client.ShoppingStoreClient;
+import ru.yandex.practicum.iteractionapi.dto.ProductDto;
 import ru.yandex.practicum.iteractionapi.dto.order.OrderDto;
 import ru.yandex.practicum.iteractionapi.dto.order.OrderState;
 import ru.yandex.practicum.iteractionapi.dto.payment.PaymentDto;
@@ -74,7 +75,7 @@ public class PaymentServiceImpl implements PaymentService {
         Map<UUID, Long> products = orderDto.getProducts();
         double productCost = 0.0;
         for (Map.Entry<UUID, Long> entry : products.entrySet()) {
-            ProductFullDto product = shoppingStoreClient.getProduct(entry.getKey());
+            ProductDto product = shoppingStoreClient.findProductById(entry.getKey());
             Double price = product.getPrice();
             productCost = productCost + price * entry.getValue();
         }

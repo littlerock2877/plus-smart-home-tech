@@ -12,6 +12,7 @@ import ru.yandex.practicum.delivery.model.Delivery;
 import ru.yandex.practicum.delivery.repository.DeliveryRepository;
 import ru.yandex.practicum.iteractionapi.client.OrderClient;
 import ru.yandex.practicum.iteractionapi.client.WarehouseClient;
+import ru.yandex.practicum.iteractionapi.dto.ShippedToDeliveryRequest;
 import ru.yandex.practicum.iteractionapi.dto.delivery.DeliveryDto;
 import ru.yandex.practicum.iteractionapi.dto.delivery.DeliveryState;
 import ru.yandex.practicum.iteractionapi.dto.order.OrderDto;
@@ -53,7 +54,6 @@ public class DeliveryServiceImpl implements DeliveryService {
             log.warn("Failed to change status order: {}", orderId, e);
             throw e;
         }
-
     }
 
     @Override

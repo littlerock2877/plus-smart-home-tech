@@ -10,7 +10,10 @@ import ru.yandex.practicum.iteractionapi.client.DeliveryClient;
 import ru.yandex.practicum.iteractionapi.client.PaymentClient;
 import ru.yandex.practicum.iteractionapi.client.WarehouseClient;
 import ru.yandex.practicum.iteractionapi.dto.AddressDto;
+import ru.yandex.practicum.iteractionapi.dto.AssemblyProductsForOrderRequest;
+import ru.yandex.practicum.iteractionapi.dto.BookedProductsDto;
 import ru.yandex.practicum.iteractionapi.dto.delivery.DeliveryDto;
+import ru.yandex.practicum.iteractionapi.dto.delivery.DeliveryState;
 import ru.yandex.practicum.iteractionapi.dto.order.CreateNewOrderRequest;
 import ru.yandex.practicum.iteractionapi.dto.order.OrderDto;
 import ru.yandex.practicum.iteractionapi.dto.order.OrderState;
@@ -201,7 +204,6 @@ public class OrderServiceImpl implements OrderService {
             throw e;
         }
         savedOrder.setDeliveryWeight(clientAssembly.getDeliveryWeight());
-        savedOrder.setFragile(clientAssembly.isFragile());
         savedOrder.setDeliveryVolume(clientAssembly.getDeliveryVolume());
         savedOrder.setState(OrderState.ASSEMBLED);
         Order saved = orderRepository.save(savedOrder);
