@@ -24,6 +24,7 @@ import ru.yandex.practicum.order.model.Order;
 import ru.yandex.practicum.order.model.OrderProduct;
 import ru.yandex.practicum.order.repository.OrderRepository;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -155,7 +156,7 @@ public class OrderServiceImpl implements OrderService {
     public OrderDto calculateOrder(UUID orderId) {
         Order order = getOrderFromRepository(orderId);
         OrderDto dto = orderMapper.toDto(order);
-        Double productCost;
+        BigDecimal productCost;
         try {
             productCost = paymentClient.calculateProductCost(dto);
 
@@ -166,7 +167,7 @@ public class OrderServiceImpl implements OrderService {
         order.setProductPrice(productCost);
         dto.setProductPrice(productCost);
 
-        Double totalCost;
+        BigDecimal totalCost;
         try {
             totalCost = paymentClient.calculateTotalCost(dto);
         } catch (FeignException e) {
@@ -183,7 +184,7 @@ public class OrderServiceImpl implements OrderService {
     public OrderDto calculateOrderDelivery(UUID orderId) {
         Order order = getOrderFromRepository(orderId);
         OrderDto dto = orderMapper.toDto(order);
-        Double deliveryCost = deliveryClient.calculateFullDeliveryCost(dto);
+        BigDecimal deliveryCost = deliveryClient.calculateFullDeliveryCost(dto);
         order.setDeliveryPrice(deliveryCost);
         Order saved = orderRepository.save(order);
         return orderMapper.toDto(saved);

@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import ru.yandex.practicum.iteractionapi.dto.payment.PaymentStatus;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Entity
@@ -19,9 +20,9 @@ public class Payment {
     private UUID paymentId;
     private UUID orderId;
 
-    private Double totalPrice;
-    private Double deliveryPrice;
-    private Double productPrice;
+    private BigDecimal totalPrice;
+    private BigDecimal deliveryPrice;
+    private BigDecimal productPrice;
     @Enumerated(value = EnumType.STRING)
     private PaymentStatus status;
 }

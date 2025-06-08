@@ -15,6 +15,7 @@ import ru.yandex.practicum.payment.mapper.PaymentMapper;
 import ru.yandex.practicum.payment.model.Payment;
 import ru.yandex.practicum.payment.repository.PaymentRepository;
 
+import java.math.BigDecimal;
 import java.util.Map;
 import java.util.UUID;
 
@@ -47,11 +48,11 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Transactional
     @Override
-    public Double calculateTotalCost(OrderDto orderDto) {
+    public BigDecimal calculateTotalCost(OrderDto orderDto) {
         Payment payment = getFromRepository(orderDto.getOrderId());
-        Double deliveryPrice = payment.getDeliveryPrice();
-        Double productPrice = payment.getProductPrice();
-        double totalPrice = productPrice + deliveryPrice;
+        BigDecimal deliveryPrice = payment.getDeliveryPrice();
+        BigDecimal productPrice = payment.getProductPrice();
+        BigDecimal totalPrice = productPrice.add(deliveryPrice);
         payment.setTotalPrice(totalPrice);
         paymentRepository.save(payment);
         return totalPrice;
@@ -70,14 +71,14 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Transactional
     @Override
-    public Double calculateProductCost(OrderDto orderDto) {
+    public BigDecimal calculateProductCost(OrderDto orderDto) {
         Payment payment = getFromRepository(orderDto.getOrderId());
         Map<UUID, Long> products = orderDto.getProducts();
-        double productCost = 0.0;
+        BigDecimal productCost = BigDecimal.valueOf(0);
         for (Map.Entry<UUID, Long> entry : products.entrySet()) {
             ProductDto product = shoppingStoreClient.findProductById(entry.getKey());
             Double price = product.getPrice();
-            productCost = productCost + price * entry.getValue();
+            productCost = productCost.add(BigDecimal.valueOf(price * entry.getValue()));
         }
         payment.setProductPrice(productCost);
         return productCost;

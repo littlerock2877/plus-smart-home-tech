@@ -17,6 +17,7 @@ import ru.yandex.practicum.iteractionapi.dto.delivery.DeliveryDto;
 import ru.yandex.practicum.iteractionapi.dto.delivery.DeliveryState;
 import ru.yandex.practicum.iteractionapi.dto.order.OrderDto;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Slf4j
@@ -88,23 +89,23 @@ public class DeliveryServiceImpl implements DeliveryService {
     }
 
     @Override
-    public Double calculateFullDeliveryCost(OrderDto orderDto) {
+    public BigDecimal calculateFullDeliveryCost(OrderDto orderDto) {
         Delivery delivery = getDeliveryFromRepository(orderDto.getDeliveryId());
-        double deliveryCost = 5.0;
+        BigDecimal deliveryCost = BigDecimal.valueOf(5);
 
         if (delivery.getFromAddress().getCity().equals(ADDRESS_1)) {
-            deliveryCost = deliveryCost * 1;
+            deliveryCost = deliveryCost;
         } else {
-            deliveryCost = deliveryCost * 2;
+            deliveryCost = deliveryCost.multiply(BigDecimal.valueOf(2));
         }
 
         if (orderDto.getFragile()) {
-            deliveryCost = deliveryCost * 1.2;
+            deliveryCost = deliveryCost.multiply(BigDecimal.valueOf(1.2));
         }
-        deliveryCost = deliveryCost + orderDto.getDeliveryWeight() * 0.3;
-        deliveryCost = deliveryCost + orderDto.getDeliveryVolume() * 0.2;
+        deliveryCost = deliveryCost.add(BigDecimal.valueOf(orderDto.getDeliveryWeight() * 0.3));
+        deliveryCost = deliveryCost.add(BigDecimal.valueOf(orderDto.getDeliveryWeight() * 0.2));
         if (!delivery.getToAddress().getStreet().equals(delivery.getFromAddress().getStreet())) {
-            deliveryCost = deliveryCost * 1.2;
+            deliveryCost = deliveryCost.multiply(BigDecimal.valueOf(1.2));
         }
         delivery.setDeliveryVolume(orderDto.getDeliveryVolume());
         delivery.setDeliveryWeight(orderDto.getDeliveryWeight());

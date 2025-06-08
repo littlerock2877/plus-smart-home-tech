@@ -9,6 +9,7 @@ import ru.yandex.practicum.iteractionapi.dto.order.OrderDto;
 import ru.yandex.practicum.iteractionapi.dto.payment.PaymentDto;
 import ru.yandex.practicum.payment.service.PaymentService;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @RestController
@@ -23,7 +24,7 @@ public class PaymentController {
     }
 
     @PostMapping("/totalCost")
-    public Double calculateTotalCost(@RequestBody OrderDto orderDto) {
+    public BigDecimal calculateTotalCost(@RequestBody OrderDto orderDto) {
         return paymentService.calculateTotalCost(orderDto);
     }
 
@@ -33,7 +34,7 @@ public class PaymentController {
     }
 
     @PostMapping("/productCost")
-    public Double calculateProductCost(@RequestBody OrderDto orderDto) {
+    public BigDecimal calculateProductCost(@RequestBody OrderDto orderDto) {
         return paymentService.calculateProductCost(orderDto);
     }
 

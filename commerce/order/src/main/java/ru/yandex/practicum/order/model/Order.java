@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import ru.yandex.practicum.iteractionapi.dto.order.OrderState;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -28,9 +29,9 @@ public class Order {
     private Double deliveryWeight;
     private Double deliveryVolume;
     private Boolean fragile;
-    private Double totalPrice;
-    private Double deliveryPrice;
-    private Double productPrice;
+    private BigDecimal totalPrice;
+    private BigDecimal deliveryPrice;
+    private BigDecimal productPrice;
 
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
     @PrimaryKeyJoinColumn
